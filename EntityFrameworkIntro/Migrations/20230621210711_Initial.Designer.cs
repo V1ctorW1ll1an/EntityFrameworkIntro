@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EntityFrameworkIntro.Migrations
 {
     [DbContext(typeof(CookBookContext))]
-    [Migration("20230621204250_Initial")]
+    [Migration("20230621210711_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
