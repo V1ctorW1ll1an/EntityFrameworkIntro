@@ -60,7 +60,9 @@ class CookBookContextFactory : IDesignTimeDbContextFactory<CookBookContext>
 {
     public CookBookContext CreateDbContext(string[] args)
     {
-        var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        var builder = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", false, true)
+            .Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<CookBookContext>();
         // postgresql
