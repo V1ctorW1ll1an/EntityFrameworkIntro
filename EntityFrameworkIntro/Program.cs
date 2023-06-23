@@ -6,39 +6,18 @@ using Microsoft.Extensions.Configuration;
 
 // Create the factory
 var factory = new CookBookContextFactory();
-
 // Create the context
 using var context = factory.CreateDbContext(args);
 
-Console.WriteLine("Add porridge for breakfast");
-
-var porridge = new Dish
-{
-    Title = "Breakfast porridge",
-    Notes = "This is so good",
-    Stars = 4
+var newDish = new Dish{
+    Title = "Foo",
+    Notes = "Bar"
 };
-
-// Add
-context.Dishes.Add(porridge);
+context.Dishes.Add(newDish);
 await context.SaveChangesAsync();
-Console.WriteLine($"Add porridge successfully: {porridge.Id}");
 
-// Read
-var dishes = await context.Dishes.Where(d => d.Title.Contains("porridge")).ToListAsync();
-if (dishes.Count != 1)
-    Console.Error.WriteLine("Something really bad happened. Porridge disappeared :-(");
-dishes.ForEach(item => Console.WriteLine($"{item.Title}"));
-
-// Update
-Console.WriteLine($"number of star before update {porridge.Stars}");
-porridge.Stars = 5;
+newDish.Notes = "Baz";
 await context.SaveChangesAsync();
-Console.WriteLine($"number of star: {porridge.Stars}");
-
-Console.WriteLine("Removing porridge from database");
-context.Dishes.Remove(porridge);
-Console.WriteLine("porridge removed");
 
 #region Models
 class Dish
