@@ -6,18 +6,58 @@ using Microsoft.Extensions.Configuration;
 
 // Create the factory
 var factory = new CookBookContextFactory();
+
 // Create the context
 using var context = factory.CreateDbContext(args);
 
-var newDish = new Dish{
-    Title = "Foo",
-    Notes = "Bar"
-};
+var newDish = new Dish { Title = "Foo", Notes = "Bar" };
 context.Dishes.Add(newDish);
 await context.SaveChangesAsync();
 
 newDish.Notes = "Baz";
 await context.SaveChangesAsync();
+
+await EntityStates(factory);
+await ChangeTracking(factory);
+
+static async Task EntityStates(CookBookContextFactory dbFactory)
+{
+    using var dbContext = dbFactory.CreateDbContext();
+    var newDish = new Dish { Title = "Foo", Notes = "Bar" };
+
+    var state = dbContext.Entry(newDish).State; // detached
+
+    dbContext.Dishes.Add(newDish);
+    state = dbContext.Entry(newDish).State; // added
+
+    await dbContext.SaveChangesAsync();
+    state = dbContext.Entry(newDish).State; // unchanged
+
+    newDish.Notes = "Other Bar";
+    state = dbContext.Entry(newDish).State; // modified
+
+    await dbContext.SaveChangesAsync();
+    state = dbContext.Entry(newDish).State; // unchanged
+
+    dbContext.Remove(newDish);
+    state = dbContext.Entry(newDish).State; // deleted
+
+    await dbContext.SaveChangesAsync();
+    state = dbContext.Entry(newDish).State; // detached
+}
+
+static async Task ChangeTracking(CookBookContextFactory dbFactory)
+{
+    using var dbContext = dbFactory.CreateDbContext();
+
+    var newDish = new Dish { Title = "Foo", Notes = "Bar" };
+    dbContext.Dishes.Add(newDish);
+    await dbContext.SaveChangesAsync();
+
+    newDish.Notes = "Bar";
+    var entry = dbContext.Entry(newDish);
+    var originalValue = entry.OriginalValues[nameof(Dish.Notes)].ToString();
+}
 
 #region Models
 class Dish
@@ -71,7 +111,7 @@ class CookBookContext : DbContext
 #region Factory
 class CookBookContextFactory : IDesignTimeDbContextFactory<CookBookContext>
 {
-    public CookBookContext CreateDbContext(string[] args)
+    public CookBookContext CreateDbContext(string[]? args = null)
     {
         var builder = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", false, true)
